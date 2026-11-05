@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Firefox
+Comment=Start Firefox in a normal window
+Exec=/usr/local/bin/xfce-kiosk-browser
+OnlyShowIn=XFCE;
+Terminal=false
+NoDisplay=true

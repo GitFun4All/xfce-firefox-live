@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+url=$(cat /etc/xfce-kiosk/url 2>/dev/null || true)
+case "$url" in
+	http://*|https://*|about:blank) ;;
+	*) url=about:blank ;;
+esac
+
+exec firefox-esr "$url"

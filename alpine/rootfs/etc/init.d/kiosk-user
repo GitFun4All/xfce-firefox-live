@@ -1,0 +1,25 @@
+#!/sbin/openrc-run
+
+description="Create the live kiosk account before LightDM starts"
+
+depend() {
+	before lightdm
+}
+
+start() {
+	ebegin "Preparing kiosk account"
+	if ! grep -q '^kiosk:' /etc/group; then
+		addgroup -g 1000 kiosk || { eend 1; return 1; }
+	fi
+	if ! grep -q '^kiosk:' /etc/passwd; then
+		adduser -D -u 1000 -h /home/kiosk -s /bin/ash -G kiosk -g "Kiosk User" kiosk || { eend 1; return 1; }
+		printf 'kiosk:live\n' | chpasswd || { eend 1; return 1; }
+	fi
+	for group in autologin plugdev video audio; do
+		if ! grep -q "^${group}:" /etc/group; then
+			addgroup -S "$group" || { eend 1; return 1; }
+		fi
+		addgroup kiosk "$group" >/dev/null 2>&1 || true
+	done
+	eend 0
+}

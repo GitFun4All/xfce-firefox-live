@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Hyper-V has no QEMU guest-agent channel. Start the agent only when the
+# virtio-serial channel is present (e.g. when this image runs under QEMU).
+if [ -c /dev/virtio-ports/org.qemu.guest_agent.0 ]; then
+	rc-service qemu-guest-agent start || true
+fi

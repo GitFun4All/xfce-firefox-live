@@ -1,0 +1,54 @@
+name: Build Xfce Firefox Alpine ISO
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "xfce-firefox-alpine-*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Build ISO
+        env:
+          CONTAINER_ENGINE: docker
+          KIOSK_BASE_IMAGE: alpine:3.24
+          CLEAN_LIVE_BUILD: "1"
+        run: ./build-container.sh
+
+      - name: Generate SHA-256 checksum
+        run: sha256sum xfce-firefox-alpine-v3.24-x86_64.iso > xfce-firefox-alpine-v3.24-x86_64.iso.sha256
+
+      - name: Upload ISO artifact for manual runs
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: xfce-firefox-alpine-v3.24
+          path: |
+            xfce-firefox-alpine-v3.24-x86_64.iso
+            xfce-firefox-alpine-v3.24-x86_64.iso.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish or update GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="$GITHUB_REF_NAME"
+          iso="xfce-firefox-alpine-v3.24-x86_64.iso"
+          checksum="xfce-firefox-alpine-v3.24-x86_64.iso.sha256"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$iso" "$checksum" --clobber
+          else
+            gh release create "$tag" "$iso" "$checksum" \
+              --title "$tag" \
+              --notes "Alpine 3.24 Xfce/Firefox live ISO. See the attached SHA-256 file to verify the download."
+          fi

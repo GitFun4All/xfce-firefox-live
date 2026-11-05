@@ -1,0 +1,17 @@
+/auto/
+/binary/
+/.build.lock
+/.alpine-aports/
+/.alpine-aports.*/
+/.alpine-work/
+/.alpine-ca-bundle.pem
+/cache/
+/chroot/
+/container-storage/
+/config/binary
+/config/bootstrap
+/config/chroot
+/config/common
+/config/source
+/live-image-*.hybrid.iso
+/xfce-firefox-alpine-*.iso
