@@ -8,8 +8,15 @@ ALPINE_TAG=${ALPINE_TAG:-v3.24}
 APORTS_BRANCH=${APORTS_BRANCH:-3.24-stable}
 APORTS_URL=${APORTS_URL:-https://codeload.github.com/alpinelinux/aports/tar.gz/refs/heads/$APORTS_BRANCH}
 ALPINE_REPO_BASE=${ALPINE_REPO_BASE:-https://dl-cdn.alpinelinux.org/alpine}
+KIOSK_VARIANT=${KIOSK_VARIANT:-xfce}
 APORTS_DIR="$ROOT/.alpine-aports"
 WORKDIR="$ROOT/.alpine-work"
+
+case "$KIOSK_VARIANT" in
+	xfce) PROFILE=xfcekiosk ;;
+	firefox-only) PROFILE=firefoxonly ;;
+	*) echo "Unsupported KIOSK_VARIANT: $KIOSK_VARIANT" >&2; exit 1 ;;
+esac
 
 if [ "$(id -u)" -ne 0 ]; then
 	echo "Run this script as root (or use ./build-container.sh)." >&2
@@ -90,6 +97,7 @@ fi
 
 install -m 755 "$ROOT/alpine/mkimg.xfcekiosk.sh" "$APORTS_DIR/scripts/mkimg.xfcekiosk.sh"
 install -m 755 "$ROOT/alpine/genapkovl-xfcekiosk.sh" "$APORTS_DIR/scripts/genapkovl-xfcekiosk.sh"
+install -m 755 "$ROOT/alpine/genapkovl-firefoxonly.sh" "$APORTS_DIR/scripts/genapkovl-firefoxonly.sh"
 
 # Include the overlay and package manifest in mkimage's cache key so edits to
 # those inputs cannot accidentally reuse a stale apkovl from an earlier build.
@@ -100,12 +108,15 @@ CONFIG_HASH=$(
 		| sha256sum \
 		| awk '{print $1}'
 )
-printf '\n# generated-input-sha256=%s\n' "$CONFIG_HASH" \
-	>> "$APORTS_DIR/scripts/genapkovl-xfcekiosk.sh"
+for generator in genapkovl-xfcekiosk.sh genapkovl-firefoxonly.sh; do
+	printf '\n# generated-input-sha256=%s\n' "$CONFIG_HASH" \
+		>> "$APORTS_DIR/scripts/$generator"
+done
 
 KIOSK_APKS=$(awk 'NF && $1 !~ /^#/ { printf "%s ", $1 }' "$ROOT/alpine/packages.list")
+FIREFOX_ONLY_APKS=$(awk 'NF && $1 !~ /^#/ { printf "%s ", $1 }' "$ROOT/alpine/firefox-only-packages.list")
 export PROJECT_ROOT="$ROOT"
-export ALPINE_TAG APORTS_BRANCH ALPINE_REPO_BASE KIOSK_APKS
+export ALPINE_TAG APORTS_BRANCH ALPINE_REPO_BASE KIOSK_APKS FIREFOX_ONLY_APKS
 
 if [ ! -d /root/.abuild ] || ! find /root/.abuild -maxdepth 1 -type f -name '*.rsa' | grep -q .; then
 	abuild-keygen -a -n
@@ -122,7 +133,7 @@ mkdir -p "$WORKDIR"
 	--repository "$ALPINE_REPO_BASE/$ALPINE_TAG/main" \
 	--repository "$ALPINE_REPO_BASE/$ALPINE_TAG/community" \
 	--arch x86_64 \
-	--profile xfcekiosk \
+	--profile "$PROFILE" \
 	--hostkeys \
 	--outdir "$ROOT" \
 	--workdir "$WORKDIR"

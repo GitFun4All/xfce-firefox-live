@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Firefox Only
+Comment=Minimal window manager session for Firefox
+Exec=openbox-session
+TryExec=openbox-session
+Type=Application
+DesktopNames=Openbox

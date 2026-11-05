@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Start Firefox with its normal browser controls, not kiosk mode.
+firefox-esr --new-window about:blank &

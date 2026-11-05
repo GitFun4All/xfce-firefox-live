@@ -8,6 +8,7 @@ ALPINE_TAG=${ALPINE_TAG:-v3.24}
 APORTS_BRANCH=${APORTS_BRANCH:-3.24-stable}
 APORTS_URL=${APORTS_URL:-https://codeload.github.com/alpinelinux/aports/tar.gz/refs/heads/$APORTS_BRANCH}
 ALPINE_REPO_BASE=${ALPINE_REPO_BASE:-https://dl-cdn.alpinelinux.org/alpine}
+KIOSK_VARIANT=${KIOSK_VARIANT:-xfce}
 ENGINE=${CONTAINER_ENGINE:-}
 CA_BUNDLE=${HOST_CA_BUNDLE:-}
 
@@ -96,6 +97,7 @@ fi
 	--env APORTS_BRANCH="$APORTS_BRANCH" \
 	--env APORTS_URL="$APORTS_URL" \
 	--env ALPINE_REPO_BASE="$ALPINE_REPO_BASE" \
+	--env KIOSK_VARIANT="$KIOSK_VARIANT" \
 	--env CLEAN_LIVE_BUILD="${CLEAN_LIVE_BUILD:-0}" \
 	--env KIOSK_BUILD_LOCK_HELD=1 \
 	"$@" \

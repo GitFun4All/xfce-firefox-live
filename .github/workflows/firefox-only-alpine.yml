@@ -1,0 +1,61 @@
+name: Build Firefox-only Wired Alpine ISO
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing release tag to update (leave blank to build an artifact only)
+        required: false
+        type: string
+  push:
+    tags:
+      - "firefox-only-alpine-*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Build Firefox-only ISO
+        env:
+          CONTAINER_ENGINE: docker
+          KIOSK_BASE_IMAGE: alpine:3.24
+          KIOSK_VARIANT: firefox-only
+          CLEAN_LIVE_BUILD: "1"
+        run: ./build-container.sh
+
+      - name: Generate SHA-256 checksum
+        run: sha256sum firefox-only-alpine-v3.24-x86_64.iso > firefox-only-alpine-v3.24-x86_64.iso.sha256
+
+      - name: Upload ISO artifact for manual runs
+        if: github.event_name == 'workflow_dispatch' && inputs.release_tag == ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: firefox-only-alpine-v3.24
+          path: |
+            firefox-only-alpine-v3.24-x86_64.iso
+            firefox-only-alpine-v3.24-x86_64.iso.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish or update GitHub Release
+        if: startsWith(github.ref, 'refs/tags/firefox-only-alpine-') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          tag="${RELEASE_TAG:-$GITHUB_REF_NAME}"
+          iso="firefox-only-alpine-v3.24-x86_64.iso"
+          checksum="firefox-only-alpine-v3.24-x86_64.iso.sha256"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$iso" "$checksum" --clobber
+          else
+            gh release create "$tag" "$iso" "$checksum" \
+              --title "$tag" \
+              --notes "Minimal Alpine 3.24 live image with Firefox ESR in a normal window and automatic wired DHCP networking. Wi-Fi and general desktop applications are omitted. Verify the ISO with the attached SHA-256 checksum."
+          fi

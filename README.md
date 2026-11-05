@@ -1,11 +1,16 @@
-# Xfce Firefox Live (Alpine)
+# Firefox Live (Alpine)
 
-A small Alpine Linux diskless ISO that boots to Xfce, automatically logs in as
-`kiosk`, and opens Firefox in a **normal browser window** (not kiosk mode). The
-default start page is `about:blank`; the address bar and browser controls remain
-available. The live overlay is temporary, so changes disappear on reboot.
+This project provides two Alpine Linux x86_64 live editions. Both automatically
+log in as `kiosk` and open Firefox ESR in a **normal browser window** (not kiosk
+mode). The default start page is `about:blank`; the address bar and browser
+controls remain available. The live overlay is temporary, so changes disappear
+on reboot.
 
-## Included
+- **Xfce edition**: a small desktop with networking tools and Wi-Fi support.
+- **Firefox-only wired edition**: a minimal Openbox session with wired DHCP and
+  no Wi-Fi or general desktop applications.
+
+## Xfce edition includes
 
 - Alpine Linux 3.24 (x86_64) with the slim `virt` kernel profile.
 - No general-purpose firmware bundle; this image is aimed at virtual machines.
@@ -63,6 +68,23 @@ git push origin xfce-firefox-alpine-2026-11-05
 The workflow attaches the ISO and a SHA-256 checksum file to the release.
 You can also run the workflow manually with `release_tag` set to update an
 existing release.
+
+## Firefox-only wired edition
+
+The separate Firefox-only edition boots directly into a normal Firefox ESR
+window under the lightweight Openbox window manager. It keeps automatic wired
+DHCP networking and omits Xfce, the terminal, Wi-Fi support, and other desktop
+applications. The existing Xfce edition remains the default and is unchanged.
+
+Build it with:
+
+```sh
+KIOSK_VARIANT=firefox-only CLEAN_LIVE_BUILD=1 ./build-container.sh
+```
+
+The output is `firefox-only-alpine-v3.24-x86_64.iso`. Its separate GitHub Actions
+workflow is named **Build Firefox-only Wired Alpine ISO**; tags matching
+`firefox-only-alpine-*` publish a separate release.
 
 ## Hyper-V preview
 
