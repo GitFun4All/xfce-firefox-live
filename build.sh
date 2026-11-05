@@ -6,7 +6,7 @@ cd "$ROOT"
 
 ALPINE_TAG=${ALPINE_TAG:-v3.24}
 APORTS_BRANCH=${APORTS_BRANCH:-3.24-stable}
-APORTS_URL=${APORTS_URL:-https://gitlab.alpinelinux.org/alpine/aports/-/archive/$APORTS_BRANCH/aports-$APORTS_BRANCH.tar.gz}
+APORTS_URL=${APORTS_URL:-https://codeload.github.com/alpinelinux/aports/tar.gz/refs/heads/$APORTS_BRANCH}
 ALPINE_REPO_BASE=${ALPINE_REPO_BASE:-https://dl-cdn.alpinelinux.org/alpine}
 APORTS_DIR="$ROOT/.alpine-aports"
 WORKDIR="$ROOT/.alpine-work"
@@ -56,7 +56,7 @@ fi
 APORTS_STAGE=$(mktemp -d "$ROOT/.alpine-aports.XXXXXX")
 trap 'rm -rf -- "$APORTS_STAGE"' EXIT HUP INT TERM
 mkdir "$APORTS_STAGE/src"
-curl --fail --location --retry 3 "$APORTS_URL" -o "$APORTS_STAGE/aports.tar.gz"
+curl --fail --location --retry 3 --silent --show-error "$APORTS_URL" -o "$APORTS_STAGE/aports.tar.gz"
 tar -xzf "$APORTS_STAGE/aports.tar.gz" --strip-components=1 -C "$APORTS_STAGE/src"
 if [ ! -f "$APORTS_STAGE/src/scripts/mkimage.sh" ]; then
 	echo "The aports archive did not contain scripts/mkimage.sh." >&2

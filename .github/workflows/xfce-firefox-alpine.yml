@@ -2,6 +2,11 @@ name: Build Xfce Firefox Alpine ISO
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing release tag to update (leave blank to build an artifact only)
+        required: false
+        type: string
   push:
     tags:
       - "xfce-firefox-alpine-*"
@@ -27,7 +32,7 @@ jobs:
         run: sha256sum xfce-firefox-alpine-v3.24-x86_64.iso > xfce-firefox-alpine-v3.24-x86_64.iso.sha256
 
       - name: Upload ISO artifact for manual runs
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && inputs.release_tag == ''
         uses: actions/upload-artifact@v4
         with:
           name: xfce-firefox-alpine-v3.24
@@ -38,11 +43,12 @@ jobs:
           retention-days: 30
 
       - name: Publish or update GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
-          tag="$GITHUB_REF_NAME"
+          tag="${RELEASE_TAG:-$GITHUB_REF_NAME}"
           iso="xfce-firefox-alpine-v3.24-x86_64.iso"
           checksum="xfce-firefox-alpine-v3.24-x86_64.iso.sha256"
           if gh release view "$tag" >/dev/null 2>&1; then

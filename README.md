@@ -59,6 +59,8 @@ git push origin xfce-firefox-alpine-2026-11-05
 ```
 
 The workflow attaches the ISO and a SHA-256 checksum file to the release.
+You can also run the workflow manually with `release_tag` set to update an
+existing release.
 
 ## Hyper-V preview
 
