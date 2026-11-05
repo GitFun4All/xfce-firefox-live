@@ -11,7 +11,8 @@ available. The live overlay is temporary, so changes disappear on reboot.
 - No general-purpose firmware bundle; this image is aimed at virtual machines.
 - Minimal Xorg and Xfce session, panel, window manager, settings, app finder, and
   `xfce4-terminal`.
-- Firefox ESR with the normal toolbar/address bar, launched automatically.
+- Firefox ESR configured as Xfce's preferred web browser, with the normal
+  toolbar/address bar, launched automatically at login.
 - NetworkManager with its tray applet, connection editor, `nmcli`, and `nmtui`;
   eudev device management, and DHCP for a wired Hyper-V adapter.
 - Basic network tools (`ip`, `ping`, `curl`, and `dig`).
@@ -21,7 +22,8 @@ available. The live overlay is temporary, so changes disappear on reboot.
 
 The Firefox URL is set in `alpine/rootfs/etc/xfce-kiosk/url`. Change it to an
 `http://` or `https://` URL (or `about:blank`) before building. The browser
-launcher can also be edited in Firefox at runtime.
+launcher can also be edited in Firefox at runtime. Xfce's preferred browser is
+configured by `alpine/rootfs/etc/xdg/xfce4/helpers.rc`.
 
 ## Build
 

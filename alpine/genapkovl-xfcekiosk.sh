@@ -40,6 +40,10 @@ for package in $KIOSK_APKS; do
 done
 
 cp -a "$PROJECT_ROOT/alpine/rootfs/etc/." "$tmp/etc/"
+mkdir -p "$tmp/usr"
+if [ -d "$PROJECT_ROOT/alpine/rootfs/usr" ]; then
+	cp -a "$PROJECT_ROOT/alpine/rootfs/usr/." "$tmp/usr/"
+fi
 
 rc_add devfs sysinit
 rc_add dmesg sysinit
@@ -66,4 +70,4 @@ rc_add networkmanager default
 rc_add local default
 rc_add lightdm default
 
-tar -c -C "$tmp" etc | gzip -9n > "$HOSTNAME.apkovl.tar.gz"
+tar -c -C "$tmp" etc usr | gzip -9n > "$HOSTNAME.apkovl.tar.gz"
